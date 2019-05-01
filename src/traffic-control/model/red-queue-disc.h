@@ -281,14 +281,12 @@ private:
   bool m_isNonlinear;       //!< True to enable Nonlinear RED
   double m_b;               //!< Increment parameter for m_curMaxP in Feng's Adaptive RED
   double m_a;               //!< Decrement parameter for m_curMaxP in Feng's Adaptive RED
-  bool m_isNs1Compat;       //!< Ns-1 compatibility
   DataRate m_linkBandwidth; //!< Link bandwidth
   Time m_linkDelay;         //!< Link delay
   bool m_useEcn;            //!< True if ECN is used (packets are marked instead of being dropped)
   bool m_useHardDrop;       //!< True if packets are always dropped above max threshold
 
   // ** Variables maintained by RED
-  double m_vD;              //!< 2.0 * m_curMaxP - 1.0 - used in "gentle" mode
   double m_curMaxP;         //!< Current max_p
   Time m_lastSet;           //!< Last time m_curMaxP was updated
   double m_vProb;           //!< Prob. of packet drop
