@@ -136,7 +136,7 @@ TypeId RedQueueDisc::GetTypeId (void)
     .AddAttribute ("QW",
                    "Queue weight related to the exponential weighted moving average (EWMA)",
                    DoubleValue (0.002),
-                   MakeDoubleAccessor (&RedQueueDisc::m_qW),
+                   MakeDoubleAccessor (&RedQueueDisc::m_Wq),
                    MakeDoubleChecker <double> ())
     .AddAttribute ("LInterm",
                    "The maximum probability of dropping a packet",
@@ -364,7 +364,7 @@ RedQueueDisc::DoEnqueue (Ptr<QueueDiscItem> item)
       m_idle = 0;
     }
 
-  m_qAvg = Estimator (nQueued, m + 1, m_qAvg, m_qW);
+  m_qAvg = Estimator (nQueued, m + 1, m_qAvg, m_Wq);
 
   NS_LOG_DEBUG ("\t bytesInQueue  " << GetInternalQueue (0)->GetNBytes () << "\tQavg " << m_qAvg);
   NS_LOG_DEBUG ("\t packetsInQueue  " << GetInternalQueue (0)->GetNPackets () << "\tQavg " << m_qAvg);
@@ -458,10 +458,10 @@ RedQueueDisc::InitializeParams (void)
 
   if (m_isARED)
     {
-      // Set m_minTh, m_maxTh and m_qW to zero for automatic setting
+      // Set m_minTh, m_maxTh and m_Wq to zero for automatic setting
       m_minTh = 0;
       m_maxTh = 0;
-      m_qW = 0;
+      m_Wq = 0;
 
       // Turn on m_isAdaptMaxP to adapt m_curMaxP
       m_isAdaptMaxP = true;
@@ -518,23 +518,23 @@ RedQueueDisc::InitializeParams (void)
   m_idleTime = NanoSeconds (0);
 
 /*
- * If m_qW=0, set it to a reasonable value of 1-exp(-1/C)
- * This corresponds to choosing m_qW to be of that value for
+ * If m_Wq=0, set it to a reasonable value of 1-exp(-1/C)
+ * This corresponds to choosing m_Wq to be of that value for
  * which the packet time constant -1/ln(1-m)qW) per default RTT 
  * of 100ms is an order of magnitude more than the link capacity, C.
  *
- * If m_qW=-1, then the queue weight is set to be a function of
+ * If m_Wq=-1, then the queue weight is set to be a function of
  * the bandwidth and the link propagation delay.  In particular, 
  * the default RTT is assumed to be three times the link delay and 
  * transmission delay, if this gives a default RTT greater than 100 ms. 
  *
- * If m_qW=-2, set it to a reasonable value of 1-exp(-10/C).
+ * If m_Wq=-2, set it to a reasonable value of 1-exp(-10/C).
  */
-  if (m_qW == 0.0)
+  if (m_Wq == 0.0)
     {
-      m_qW = 1.0 - std::exp (-1.0 / m_ptc);
+      m_Wq = 1.0 - std::exp (-1.0 / m_ptc);
     }
-  else if (m_qW == -1.0)
+  else if (m_Wq == -1.0)
     {
       double rtt = 3.0 * (m_linkDelay.GetSeconds () + 1.0 / m_ptc);
 
@@ -542,11 +542,11 @@ RedQueueDisc::InitializeParams (void)
         {
           rtt = 0.1;
         }
-      m_qW = 1.0 - std::exp (-1.0 / (10 * rtt * m_ptc));
+      m_Wq = 1.0 - std::exp (-1.0 / (10 * rtt * m_ptc));
     }
-  else if (m_qW == -2.0)
+  else if (m_Wq == -2.0)
     {
-      m_qW = 1.0 - std::exp (-10.0 / m_ptc);
+      m_Wq = 1.0 - std::exp (-10.0 / m_ptc);
     }
 
   if (m_bottom == 0)
@@ -563,7 +563,7 @@ RedQueueDisc::InitializeParams (void)
     }
 
   NS_LOG_DEBUG ("\tm_delay " << m_linkDelay.GetSeconds () << "; m_isWait " 
-                             << m_isWait << "; m_qW " << m_qW << "; m_ptc " << m_ptc
+                             << m_isWait << "; m_Wq " << m_Wq << "; m_ptc " << m_ptc
                              << "; m_minTh " << m_minTh << "; m_maxTh " << m_maxTh
                              << "; m_isGentle " << m_isGentle << "; th_diff " << th_diff
                              << "; lInterm " << m_lInterm << "; va " << m_vA <<  "; cur_max_p "
@@ -663,7 +663,7 @@ RedQueueDisc::DropEarly (Ptr<QueueDiscItem> item, uint32_t qSize)
        * pkts: the number of packets arriving in 50 ms
        */
       double pkts = m_ptc * 0.05;
-      double fraction = std::pow ((1 - m_qW), pkts);
+      double fraction = std::pow ((1 - m_Wq), pkts);
 
       if ((double) qSize < fraction * m_qAvg)
         {
@@ -683,7 +683,7 @@ RedQueueDisc::DropEarly (Ptr<QueueDiscItem> item, uint32_t qSize)
        * pkts: the number of packets arriving in 50 ms
        */
       double pkts = m_ptc * 0.05;
-      double fraction = std::pow ((1 - m_qW), pkts);
+      double fraction = std::pow ((1 - m_Wq), pkts);
       double ratio = qSize / (fraction * m_qAvg);
 
       if (ratio < 1.0)
