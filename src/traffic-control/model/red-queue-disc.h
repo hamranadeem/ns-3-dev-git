@@ -288,7 +288,6 @@ private:
   bool m_useHardDrop;       //!< True if packets are always dropped above max threshold
 
   // ** Variables maintained by RED
-  double m_vC;              //!< (1.0 - m_curMaxP) / m_maxTh - used in "gentle" mode
   double m_vD;              //!< 2.0 * m_curMaxP - 1.0 - used in "gentle" mode
   double m_curMaxP;         //!< Current max_p
   Time m_lastSet;           //!< Last time m_curMaxP was updated

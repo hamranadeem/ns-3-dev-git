@@ -503,11 +503,8 @@ RedQueueDisc::InitializeParams (void)
 
   m_curMaxP = 1.0 / m_lInterm;
 
-  m_curMaxP = 1.0 / m_lInterm;
-
   if (m_isGentle)
     {
-      m_vC = (1.0 - m_curMaxP) / m_maxTh;
       m_vD = 2.0 * m_curMaxP - 1.0;
     }
   m_idleTime = NanoSeconds (0);
@@ -561,8 +558,7 @@ RedQueueDisc::InitializeParams (void)
                              << "; m_minTh " << m_minTh << "; m_maxTh " << m_maxTh
                              << "; m_isGentle " << m_isGentle 
                              << "; lInterm " << m_lInterm <<  "; cur_max_p "
-                             << m_curMaxP <<  "; m_vC "
-                             << m_vC << "; m_vD " <<  m_vD);
+                             << m_curMaxP << "; m_vD " <<  m_vD);
 }
 
 // Updating m_curMaxP, following the pseudocode
@@ -712,7 +708,7 @@ RedQueueDisc::CalculatePNew (void)
     {
       // p ranges from m_curMaxP to 1 as the average queue
       // size ranges from m_maxTh to twice m_maxTh
-      p = m_vC * m_qAvg + m_vD;
+      p = ( (1.0 - (1.0 / m_lInterm) ) / m_maxTh )* m_qAvg + m_vD;
     }
   else if (!m_isGentle && m_qAvg >= m_maxTh)
     {
