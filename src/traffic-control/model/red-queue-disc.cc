@@ -406,31 +406,31 @@ RedQueueDisc::DoEnqueue (Ptr<QueueDiscItem> item)
       m_old = 0;
     }
 
-  if (dropType == DTYPE_UNFORCED)
-    {
-      if (!m_useEcn || !Mark (item, UNFORCED_MARK))
-        {
-          NS_LOG_DEBUG ("\t Dropping due to Prob Mark " << m_qAvg);
-          DropBeforeEnqueue (item, UNFORCED_DROP);
-          return false;
-        }
-      NS_LOG_DEBUG ("\t Marking due to Prob Mark " << m_qAvg);
-    }
-  else if (dropType == DTYPE_FORCED)
-    {
-      if (m_useHardDrop || !m_useEcn || !Mark (item, FORCED_MARK))
-        {
-          NS_LOG_DEBUG ("\t Dropping due to Hard Mark " << m_qAvg);
-          DropBeforeEnqueue (item, FORCED_DROP);
-          if (m_isNs1Compat)
-            {
-              m_count = 0;
-              m_countBytes = 0;
-            }
-          return false;
-        }
-      NS_LOG_DEBUG ("\t Marking due to Hard Mark " << m_qAvg);
-    }
+  switch(dropType)
+   {
+
+    case DTYPE_UNFORCED: if (!m_useEcn || !Mark (item, UNFORCED_MARK))
+                {
+                  NS_LOG_DEBUG ("\t Dropping due to Prob Mark hsgdcusgdvgdkjfvdjvgdfkjfdkj" << m_qAvg);
+                  DropBeforeEnqueue (item, UNFORCED_DROP);
+                  return false;
+                }
+              NS_LOG_DEBUG ("\t Marking due to Prob Mark " << m_qAvg);
+
+    case DTYPE_FORCED: if (m_useHardDrop || !m_useEcn || !Mark (item, FORCED_MARK))
+                {
+                  NS_LOG_DEBUG ("\t Dropping due to Hard Mark " << m_qAvg);
+                  DropBeforeEnqueue (item, FORCED_DROP);
+                 //CHANGE if (m_isNs1Compat)
+                 //C   {
+                      m_count = 0;
+                      m_countBytes = 0;
+                //C    }
+                  return false;
+                }
+              NS_LOG_DEBUG ("\t Marking due to Hard Mark " << m_qAvg);
+
+   }
 
   bool retval = GetInternalQueue (0)->Enqueue (item);
 
