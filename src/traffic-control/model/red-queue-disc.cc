@@ -501,14 +501,10 @@ RedQueueDisc::InitializeParams (void)
   m_old = 0;
   m_idle = 1;
 
-  double th_diff = (m_maxTh - m_minTh);
-  if (th_diff == 0)
-    {
-      th_diff = 1.0; 
-    }
-  m_vA = 1.0 / th_diff;
   m_curMaxP = 1.0 / m_lInterm;
-  m_vB = -m_minTh / th_diff;
+
+  m_curMaxP = 1.0 / m_lInterm;
+  m_vB = -m_minTh / std::max( 1.0 , m_maxTh - m_minTh);
 
   if (m_isGentle)
     {
@@ -528,7 +524,6 @@ RedQueueDisc::InitializeParams (void)
  * the default RTT is assumed to be three times the link delay and 
  * transmission delay, if this gives a default RTT greater than 100 ms. 
  *
- * If m_Wq=-2, set it to a reasonable value of 1-exp(-10/C).
  */
   if (m_Wq == 0.0)
     {
@@ -565,8 +560,8 @@ RedQueueDisc::InitializeParams (void)
   NS_LOG_DEBUG ("\tm_delay " << m_linkDelay.GetSeconds () << "; m_isWait " 
                              << m_isWait << "; m_Wq " << m_Wq << "; m_ptc " << m_ptc
                              << "; m_minTh " << m_minTh << "; m_maxTh " << m_maxTh
-                             << "; m_isGentle " << m_isGentle << "; th_diff " << th_diff
-                             << "; lInterm " << m_lInterm << "; va " << m_vA <<  "; cur_max_p "
+                             << "; m_isGentle " << m_isGentle 
+                             << "; lInterm " << m_lInterm <<  "; cur_max_p "
                              << m_curMaxP << "; v_b " << m_vB <<  "; m_vC "
                              << m_vC << "; m_vD " <<  m_vD);
 }
@@ -625,12 +620,12 @@ RedQueueDisc::UpdateMaxP (double newAve)
 
 // Compute the average queue size
 double
-RedQueueDisc::Estimator (uint32_t nQueued, uint32_t m, double qAvg, double qW)
+RedQueueDisc::Estimator (uint32_t nQueued, uint32_t m, double qAvg, double Wq)
 {
-  NS_LOG_FUNCTION (this << nQueued << m << qAvg << qW);
+  NS_LOG_FUNCTION (this << nQueued << m << qAvg << Wq);
 
-  double newAve = qAvg * std::pow (1.0 - qW, m);
-  newAve += qW * nQueued;
+  double newAve = qAvg * std::pow (1.0 - Wq, m);
+  newAve += Wq * nQueued;
 
   Time now = Simulator::Now ();
   if (m_isAdaptMaxP && now > m_lastSet + m_interval)
@@ -735,7 +730,7 @@ RedQueueDisc::CalculatePNew (void)
        * p ranges from 0 to m_curMaxP as the average queue size ranges from
        * m_minTh to m_maxTh
        */
-      p = m_vA * m_qAvg + m_vB;
+      p = (1.0 / std::max( 1.0 , m_maxTh - m_minTh)) * m_qAvg + m_vB;
 
       if (m_isNonlinear)
         {
