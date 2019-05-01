@@ -421,11 +421,9 @@ RedQueueDisc::DoEnqueue (Ptr<QueueDiscItem> item)
                 {
                   NS_LOG_DEBUG ("\t Dropping due to Hard Mark " << m_qAvg);
                   DropBeforeEnqueue (item, FORCED_DROP);
-                 //CHANGE if (m_isNs1Compat)
-                 //C   {
-                      m_count = 0;
-                      m_countBytes = 0;
-                //C    }
+                  m_count = 0;
+                  m_countBytes = 0;
+                
                   return false;
                 }
               NS_LOG_DEBUG ("\t Marking due to Hard Mark " << m_qAvg);
