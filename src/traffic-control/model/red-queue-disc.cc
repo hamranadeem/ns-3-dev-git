@@ -504,7 +504,6 @@ RedQueueDisc::InitializeParams (void)
   m_curMaxP = 1.0 / m_lInterm;
 
   m_curMaxP = 1.0 / m_lInterm;
-  m_vB = -m_minTh / std::max( 1.0 , m_maxTh - m_minTh);
 
   if (m_isGentle)
     {
@@ -562,7 +561,7 @@ RedQueueDisc::InitializeParams (void)
                              << "; m_minTh " << m_minTh << "; m_maxTh " << m_maxTh
                              << "; m_isGentle " << m_isGentle 
                              << "; lInterm " << m_lInterm <<  "; cur_max_p "
-                             << m_curMaxP << "; v_b " << m_vB <<  "; m_vC "
+                             << m_curMaxP <<  "; m_vC "
                              << m_vC << "; m_vD " <<  m_vD);
 }
 
@@ -730,7 +729,7 @@ RedQueueDisc::CalculatePNew (void)
        * p ranges from 0 to m_curMaxP as the average queue size ranges from
        * m_minTh to m_maxTh
        */
-      p = (1.0 / std::max( 1.0 , m_maxTh - m_minTh)) * m_qAvg + m_vB;
+      p = (1.0 / std::max( 1.0 , m_maxTh - m_minTh)) * m_qAvg + -m_minTh / (m_maxTh - m_minTh);
 
       if (m_isNonlinear)
         {
